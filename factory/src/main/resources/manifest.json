@@ -1,0 +1,22 @@
+{
+  "Group": "DevMunky",
+  "Name": "Factory",
+  "Version": "1.0.0",
+  "Description": "A factory mod for Hytale.",
+  "Authors": [
+    {
+      "Name": "DevMunky",
+      "Email": "developermunky@gmail.com"
+    }
+  ],
+  "Website": "${website}",
+  "ServerVersion": "*",
+  "Dependencies": {
+    "DevMunky:KotlinPlugin": "*",
+    "DevMunky:LibTech": "*"
+  },
+  "OptionalDependencies": {},
+  "DisabledByDefault": false,
+  "Main": "dev.munky.factory.FactoryMod",
+  "IncludesAssetPack": true
+}

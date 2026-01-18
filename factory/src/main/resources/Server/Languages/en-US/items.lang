@@ -1,0 +1,4 @@
+Machine.name = Machine
+Machine.description = A machine.
+Wire_Tool.name = Wire Tool
+Wire_Tool.description = Right click a a machine block to connect it to another one.

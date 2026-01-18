@@ -1,0 +1,53 @@
+{
+  "TranslationProperties": {
+    "Name": "items.Machine.name",
+    "Description": "items.Machine.description"
+  },
+  "Id": "Machine",
+  "MaxStack": 99,
+  "Icon": "Icons/ItemsGenerated/Machine.png",
+  "Categories": [
+    "Blocks.Machines"
+  ],
+  "PlayerAnimationsId": "Block",
+  "Set": "Machine",
+  "BlockType": {
+    "Material": "Solid",
+    "BlockEntity": {
+      "Components": {
+        "Machine": {},
+        "WiredEnergy": {}
+      }
+    },
+    "DrawType": "Cube",
+    "Group": "Machine",
+    "Flags": {},
+    "Textures": [
+      {
+        "Up": "BlockTextures/Machine/Up.png",
+        "Down": "BlockTextures/Machine/Down.png",
+        "North": "BlockTextures/Machine/North.png",
+        "South": "BlockTextures/Machine/South.png",
+        "East": "BlockTextures/Machine/East.png",
+        "West": "BlockTextures/Machine/West.png"
+      }
+    ],
+    "Interactions": {
+      "Use": {
+        "Interactions": [
+          {
+            "Type": "Machine"
+          }
+        ]
+      }
+    },
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "SoftBlocks"
+      }
+    },
+    "ParticleColor": "#ffffff",
+    "BlockParticleSetId": "Metal",
+    "BlockSoundSetId": "Metal"
+  }
+}

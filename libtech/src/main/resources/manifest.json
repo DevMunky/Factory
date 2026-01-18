@@ -1,0 +1,21 @@
+{
+  "Group": "DevMunky",
+  "Name": "LibTech",
+  "Version": "1.0.0",
+  "Description": "A tech library for Hytale.",
+  "Authors": [
+    {
+      "Name": "DevMunky",
+      "Email": "developermunky@gmail.com"
+    }
+  ],
+  "Website": "${website}",
+  "ServerVersion": "*",
+  "Dependencies": {
+    "DevMunky:KotlinPlugin": "*"
+  },
+  "OptionalDependencies": {},
+  "DisabledByDefault": false,
+  "Main": "dev.munky.libtech.LibTech",
+  "IncludesAssetPack": false
+}

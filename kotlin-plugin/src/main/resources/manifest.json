@@ -1,0 +1,19 @@
+{
+  "Group": "DevMunky",
+  "Name": "KotlinPlugin",
+  "Version": "1.0.0",
+  "Description": "Provides the Kotlin runtime for plugins that need it.",
+  "Authors": [
+    {
+      "Name": "DevMunky",
+      "Email": "developermunky@gmail.com"
+    }
+  ],
+  "Website": "${website}",
+  "ServerVersion": "*",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "DisabledByDefault": false,
+  "Main": "dev.munky.kotlin_plugin.KotlinPlugin",
+  "IncludesAssetPack": false
+}
