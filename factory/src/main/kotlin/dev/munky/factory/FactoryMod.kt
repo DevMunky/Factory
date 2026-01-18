@@ -34,6 +34,8 @@ class FactoryMod(init: JavaPluginInit) : JavaPlugin(init) {
     override fun shutdown() {
         logger.atInfo().log("Factory shutting down.")
         chunkStoreRegistry.shutdown()
+        entityStoreRegistry.shutdown()
+        eventRegistry.shutdown()
         logger.atInfo().log("Factory shut down.")
     }
 

@@ -46,8 +46,7 @@ class MachineInteraction : SimpleBlockInteraction() {
 
         val machine = chunkStore.getComponent(blockRef, MachineComponent.getComponentType())
         val energy = chunkStore.getComponent(blockRef, WiredEnergyComponent.getComponentType())
-        val unknown = chunkStore.getComponent(blockRef, ChunkStore.REGISTRY.unknownComponentType)
-        player.sendMessage(Message.raw("machine=$machine\nenergy=$energy\nunknown=${unknown?.unknownComponents}"))
+        player.sendMessage(Message.raw("machine=(${machine.hashCode()})$machine\nenergy=(${energy.hashCode()})$energy"))
     }
 
     override fun simulateInteractWithBlock(

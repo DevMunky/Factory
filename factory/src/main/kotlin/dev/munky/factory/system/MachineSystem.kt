@@ -21,14 +21,10 @@ class MachineSystem : EntityTickingSystem<ChunkStore>() {
     ) {
         val block = archetypeChunk.getReferenceTo(index)
         val machine = store.getComponent(block, MachineComponent.getComponentType()) ?: return
-        val energy = store.getComponent(block, WiredEnergyComponent.getComponentType()) ?: return
         machine.number = index
-        if (energy.value >= 0 && index <= 1) {
-            energy.value = 100.0
-        }
     }
 
-    override fun getQuery(): Query<ChunkStore> = Query.and(MachineComponent.getComponentType(), WiredEnergyComponent.getComponentType())
+    override fun getQuery(): Query<ChunkStore> = Query.and(MachineComponent.getComponentType())
 
     companion object {
         private val LOGGER = HytaleLogger.forEnclosingClass()

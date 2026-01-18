@@ -9,12 +9,14 @@ import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore
 import dev.munky.factory.FactoryMod
 import dev.munky.libtech.util.codec
 
-data class MachineComponent(
+class MachineComponent(
     var number: Int? = null,
     var id: String? = null,
     var items: MutableSet<ItemStack> = mutableSetOf()
 ): Component<ChunkStore> {
-    override fun clone(): Component<ChunkStore> = copy()
+    override fun clone(): Component<ChunkStore> {
+        return MachineComponent(number, id, items.toMutableSet())
+    }
 
     companion object {
         val CODEC = codec(MachineComponent::class, ::MachineComponent) {

@@ -9,26 +9,44 @@ import com.hypixel.hytale.codec.store.StoredCodec
 import com.hypixel.hytale.codec.validation.Validators
 import com.hypixel.hytale.component.Component
 import com.hypixel.hytale.math.vector.Vector3i
-import com.hypixel.hytale.server.core.HytaleServer
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore
 import dev.munky.libtech.LibTech
 import dev.munky.libtech.component.WiredEnergyComponent.EnergyConnection
 import dev.munky.libtech.util.codec
+import java.util.concurrent.ConcurrentHashMap
 
 
-data class WiredEnergyComponent(
-    override var connections: MutableSet<EnergyConnection> = HashSet(),
-) : WiredValueComponent<WiredEnergyComponent, EnergyConnection>() {
+class WiredEnergyComponent(
+    override var connectedBlocks: MutableSet<EnergyConnection> = ConcurrentHashMap.newKeySet(),
+    override var value: Double = 0.0,
     override var capacity: Double = Double.MAX_VALUE
+) : WiredValueComponent<WiredEnergyComponent, EnergyConnection>() {
 
-    override fun clone(): Component<ChunkStore> = copy()
+    override fun addConnection(connection: EnergyConnection) {
+        connectedBlocks.add(connection)
+    }
+
+    override fun removeConnection(connection: EnergyConnection) {
+        connectedBlocks.remove(connection)
+    }
+
+    override fun clone(): Component<ChunkStore> = WiredEnergyComponent(
+        connectedBlocks.toMutableSet(),
+        value, capacity
+    )
+
+    override fun toString() = "WiredEnergyComponent(connectedBlocks=$connectedBlocks, value=$value, capacity=$capacity)"
 
     data class EnergyConnection(
-        override var position: Vector3i = Vector3i.ZERO
+        override var start: Vector3i = Vector3i.ZERO,
+        override var end: Vector3i = Vector3i.ZERO
     ) : Connection<WiredEnergyComponent, EnergyConnection> {
         companion object {
             val CODEC = codec(EnergyConnection::class, ::EnergyConnection) {
-                field(EnergyConnection::position, Vector3i.CODEC) {
+                field(EnergyConnection::start, Vector3i.CODEC) {
+                    validate(Validators.nonNull())
+                }
+                field(EnergyConnection::end, Vector3i.CODEC) {
                     validate(Validators.nonNull())
                 }
             }
@@ -41,7 +59,7 @@ data class WiredEnergyComponent(
 
     companion object {
         val CODEC: BuilderCodec<WiredEnergyComponent> = codec(WiredEnergyComponent::class, ::WiredEnergyComponent) {
-            field(WiredEnergyComponent::connections, SetCodec(StoredCodec(CodecKey("EnergyConnectionCodec")), ::mutableSetOf, false))
+            field(WiredEnergyComponent::connectedBlocks, SetCodec(StoredCodec(CodecKey("EnergyConnectionCodec")), { ConcurrentHashMap.newKeySet() }, false))
             field(WiredEnergyComponent::value, Codec.DOUBLE)
         }
 

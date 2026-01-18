@@ -35,6 +35,12 @@ class LibTech(init: JavaPluginInit) : JavaPlugin(init) {
         chunkStoreRegistry.registerSystem(wireSystems.OnBlockChange())
     }
 
+    override fun shutdown() {
+        chunkStoreRegistry.shutdown()
+        entityStoreRegistry.shutdown()
+        eventRegistry.shutdown()
+    }
+
     companion object {
         private lateinit var instance: LibTech
         fun get(): LibTech = instance

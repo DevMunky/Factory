@@ -8,7 +8,6 @@ import com.hypixel.hytale.math.vector.Vector3i
 import com.hypixel.hytale.protocol.InteractionType
 import com.hypixel.hytale.server.core.Message
 import com.hypixel.hytale.server.core.entity.InteractionContext
-import com.hypixel.hytale.server.core.entity.entities.Player
 import com.hypixel.hytale.server.core.inventory.ItemStack
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.client.SimpleBlockInteraction
@@ -38,37 +37,44 @@ class WireToolInteraction : SimpleBlockInteraction() {
         val chunkStore = chunkReference.getStore()
 
         val blocksComponent = chunkStore.getComponent(chunkReference, BlockComponentChunk.getComponentType()) ?: return
-        val blockIndex = ChunkUtil.indexBlockInColumn(pos.x, pos.y, pos.z)
-        val blockRef = blocksComponent.getEntityReference(blockIndex) ?: return
+        val targetIndex = ChunkUtil.indexBlockInColumn(pos.x, pos.y, pos.z)
+        val targetRef = blocksComponent.getEntityReference(targetIndex) ?: return
 
-        var interactedEnergy = chunkStore.getComponent(blockRef, WiredEnergyComponent.getComponentType())
-        val wireToolComponent = commandBuffer.getComponent(refToPlayer, WireToolDataComponent.getComponentType())
+        val targetEnergy = chunkStore.getComponent(targetRef, WiredEnergyComponent.getComponentType())
+        val toolData = commandBuffer.getComponent(refToPlayer, WireToolDataComponent.getComponentType())
+
+        if (type == InteractionType.Primary && targetEnergy != null) {
+            targetEnergy.value += 10
+            return
+        }
 
         when {
-            wireToolComponent != null -> {
-                val rootEnergy = wireToolComponent.wireComponent
+            toolData != null -> {
+                commandBuffer.removeComponent(refToPlayer, WireToolDataComponent.getComponentType())
+                val rootEnergy = toolData.wireComponent
 
-                when (interactedEnergy) {
+                when (targetEnergy) {
                     null -> {
-                        interactedEnergy = WiredEnergyComponent(mutableSetOf(
-                            WiredEnergyComponent.EnergyConnection(position = wireToolComponent.position)
-                        ))
-                        chunkStore.addComponent(blockRef, WiredEnergyComponent.getComponentType(), interactedEnergy)
-                        playerRef.sendMessage(Message.raw(""))
+                        playerRef.sendMessage(Message.raw("This is not an energy block."))
                     }
                     else -> {
-                        interactedEnergy.connections.add(WiredEnergyComponent.EnergyConnection(position = wireToolComponent.position))
-                        playerRef.sendMessage(Message.raw(""))
+                        commandBuffer.run {
+                            if (targetEnergy === rootEnergy) {
+                                println("stupid wrench added two routes")
+                                return@run
+                            }
+                            targetEnergy.addConnection(WiredEnergyComponent.EnergyConnection(start = toolData.position, end = pos))
+                            rootEnergy.addConnection(WiredEnergyComponent.EnergyConnection(start = pos, end = toolData.position))
+                        }
+                        playerRef.sendMessage(Message.raw("wired energy block"))
                     }
                 }
-
-                rootEnergy.connections.add(WiredEnergyComponent.EnergyConnection(position = pos))
             }
-            interactedEnergy != null -> {
+            targetEnergy != null -> {
                 commandBuffer.addComponent(refToPlayer, WireToolDataComponent.getComponentType(), WireToolDataComponent(
                     position = pos,
-                    ref = blockRef,
-                    wireComponent = interactedEnergy
+                    ref = targetRef,
+                    wireComponent = targetEnergy
                 ))
                 playerRef.sendMessage(Message.raw("Interact with another wired block to connect them."))
             }
