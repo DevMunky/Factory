@@ -36,9 +36,9 @@ class LibTech(init: JavaPluginInit) : JavaPlugin(init) {
     }
 
     override fun shutdown() {
-        chunkStoreRegistry.shutdown()
-        entityStoreRegistry.shutdown()
-        eventRegistry.shutdown()
+        // chunkStoreRegistry.shutdown()
+        // entityStoreRegistry.shutdown()
+        // eventRegistry.shutdown()
     }
 
     companion object {

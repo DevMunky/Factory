@@ -3,7 +3,6 @@ package dev.munky.libtech.system
 import com.hypixel.hytale.component.*
 import com.hypixel.hytale.component.query.Query
 import com.hypixel.hytale.component.system.RefSystem
-import com.hypixel.hytale.component.system.tick.DelayedEntitySystem
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem
 import com.hypixel.hytale.logger.HytaleLogger
 import com.hypixel.hytale.math.util.ChunkUtil
@@ -12,12 +11,10 @@ import com.hypixel.hytale.protocol.packets.buildertools.BuilderToolLaserPointer
 import com.hypixel.hytale.server.core.asset.util.ColorParseUtil
 import com.hypixel.hytale.server.core.modules.block.BlockModule
 import com.hypixel.hytale.server.core.universe.world.PlayerUtil
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk
+import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore
 import dev.munky.libtech.component.WiredEnergyComponent
 import dev.munky.libtech.component.WiredValueComponent
-import java.util.concurrent.TimeUnit
-import kotlin.math.roundToInt
 
 class WireSystems<C, CONN>(
     val componentType: ComponentType<ChunkStore, C>
@@ -34,13 +31,15 @@ class WireSystems<C, CONN>(
             commandBuffer: CommandBuffer<ChunkStore>
         ) {
             val blockRef = archetypeChunk.getReferenceTo(index)
-            val block = store.getComponent(blockRef, BlockModule.BlockStateInfo.getComponentType()) ?: return
+            val block = blockRef.store.getComponent(blockRef, BlockModule.BlockStateInfo.getComponentType()) ?: return
             val blockIndex = block.index
-            val worldChunk = block.chunkRef.store.getComponent(block.chunkRef, WorldChunk.getComponentType()) ?: return
+            val blockChunk = block.chunkRef.store.getComponent(block.chunkRef, BlockChunk.getComponentType()) ?: return
 
-            val blockX = ChunkUtil.worldCoordFromLocalCoord(worldChunk.x, ChunkUtil.xFromIndex(blockIndex))
+            val blockX = ChunkUtil.worldCoordFromLocalCoord(blockChunk.x, ChunkUtil.xFromIndex(blockIndex))
             val blockY = ChunkUtil.yFromBlockInColumn(blockIndex)
-            val blockZ = ChunkUtil.worldCoordFromLocalCoord(worldChunk.z, ChunkUtil.zFromIndex(blockIndex))
+            val blockZ = ChunkUtil.worldCoordFromLocalCoord(blockChunk.z, ChunkUtil.zFromIndex(blockIndex))
+
+            //println("block at $blockX,$blockY,$blockZ in chunk ${worldChunk.x},${worldChunk.z}")
 
             val thisEnergy = store.getComponent(blockRef, componentType) ?: return
 
@@ -88,6 +87,7 @@ class WireSystems<C, CONN>(
                 shootLaser(store, route.start, route.end, 500)
             }
 
+            blockChunk.markNeedsSaving()
             commandBuffer.run {
                 thisEnergy.value = thisValue - moved
             }
@@ -120,13 +120,22 @@ class WireSystems<C, CONN>(
             commandBuffer: CommandBuffer<ChunkStore>
         ) {
             val energyComponent = store.getComponent(blockRef, WiredEnergyComponent.getComponentType()) ?: return
+            var modified = false
             energyComponent.connections.forEach { connection ->
                 val connectionBlockRef = connection.getStartBlock(store)
                 val connectionEnergyRef = connectionBlockRef?.let { store.getComponent(it, WiredEnergyComponent.getComponentType()) }
-                if (connectionEnergyRef == null) commandBuffer.run {
-                    energyComponent.removeConnection(connection)
-                    println("cleaned up stale wire connection at $connection.")
+                if (connectionEnergyRef == null) {
+                    modified = true
+                    commandBuffer.run {
+                        energyComponent.removeConnection(connection)
+                        println("cleaned up stale wire connection at $connection.")
+                    }
                 }
+            }
+            if (modified) {
+                val info = store.getComponent(blockRef, BlockModule.BlockStateInfo.getComponentType()) ?: return
+                val blockChunk = info.chunkRef.store.getComponent(info.chunkRef, BlockChunk.getComponentType()) ?: return
+                blockChunk.markNeedsSaving()
             }
         }
 
@@ -137,12 +146,14 @@ class WireSystems<C, CONN>(
             commandBuffer: CommandBuffer<ChunkStore>
         ) {
             val energyComponent = store.getComponent(blockRef, WiredEnergyComponent.getComponentType()) ?: return
+            var modified = false
 
             for (connection in energyComponent.connections) {
                 val startRef = connection.getStartBlock(store)
                 val endRef = connection.getEndBlock(store)
                 if (startRef != null) {
                     val connectionEnergyRef = store.getComponent(startRef, WiredEnergyComponent.getComponentType()) ?: continue
+                    modified = true
                     commandBuffer.run {
                         println("fixed ${connection.start} : ${connectionEnergyRef.connections}")
                         connectionEnergyRef.removeConnection(connection)
@@ -150,11 +161,18 @@ class WireSystems<C, CONN>(
                 }
                 if (endRef != null) {
                     val connectionEnergyRef = store.getComponent(endRef, WiredEnergyComponent.getComponentType()) ?: continue
+                    modified = true
                     commandBuffer.run {
                         println("fixed ${connection.end} : ${connectionEnergyRef.connections}")
                         connectionEnergyRef.removeConnection(connection)
                     }
                 }
+            }
+
+            if (modified) {
+                val info = store.getComponent(blockRef, BlockModule.BlockStateInfo.getComponentType()) ?: return
+                val blockChunk = info.chunkRef.store.getComponent(info.chunkRef, BlockChunk.getComponentType()) ?: return
+                blockChunk.markNeedsSaving()
             }
         }
     }

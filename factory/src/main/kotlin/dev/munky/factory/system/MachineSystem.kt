@@ -21,7 +21,7 @@ class MachineSystem : EntityTickingSystem<ChunkStore>() {
     ) {
         val block = archetypeChunk.getReferenceTo(index)
         val machine = store.getComponent(block, MachineComponent.getComponentType()) ?: return
-        machine.number = index
+        //machine.number = index
     }
 
     override fun getQuery(): Query<ChunkStore> = Query.and(MachineComponent.getComponentType())

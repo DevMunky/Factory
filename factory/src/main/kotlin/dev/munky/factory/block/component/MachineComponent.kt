@@ -3,6 +3,7 @@ package dev.munky.factory.block.component
 
 import com.hypixel.hytale.codec.Codec
 import com.hypixel.hytale.codec.codecs.set.SetCodec
+import com.hypixel.hytale.codec.validation.Validators
 import com.hypixel.hytale.component.Component
 import com.hypixel.hytale.server.core.inventory.ItemStack
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore
@@ -14,13 +15,14 @@ class MachineComponent(
     var id: String? = null,
     var items: MutableSet<ItemStack> = mutableSetOf()
 ): Component<ChunkStore> {
-    override fun clone(): Component<ChunkStore> {
-        return MachineComponent(number, id, items.toMutableSet())
-    }
+    override fun clone(): Component<ChunkStore> = MachineComponent(number, id, items.toMutableSet())
+
+    override fun toString() = "MachineComponent(number=$number, id=$id, items=$items)"
 
     companion object {
         val CODEC = codec(MachineComponent::class, ::MachineComponent) {
             field(MachineComponent::number, Codec.INTEGER) {
+                validate(Validators.nonNull())
                 meta {
                     description = "The number of this machine"
                 }

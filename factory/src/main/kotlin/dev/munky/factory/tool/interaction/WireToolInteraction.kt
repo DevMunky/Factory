@@ -17,6 +17,7 @@ import com.hypixel.hytale.server.core.universe.world.chunk.BlockComponentChunk
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore
 import dev.munky.factory.FactoryMod
+import dev.munky.factory.block.component.MachineComponent
 import dev.munky.libtech.component.WiredEnergyComponent
 import dev.munky.libtech.util.codec
 
@@ -44,7 +45,13 @@ class WireToolInteraction : SimpleBlockInteraction() {
         val toolData = commandBuffer.getComponent(refToPlayer, WireToolDataComponent.getComponentType())
 
         if (type == InteractionType.Primary && targetEnergy != null) {
-            targetEnergy.value += 10
+            val machine = chunkStore.getComponent(targetRef, MachineComponent.getComponentType())
+            commandBuffer.run {
+                machine?.let {
+                    it.number = it.number?.plus(1) ?: 0
+                }
+                targetEnergy.value += 10
+            }
             return
         }
 

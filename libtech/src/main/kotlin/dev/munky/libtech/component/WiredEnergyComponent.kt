@@ -50,16 +50,12 @@ class WiredEnergyComponent(
                     validate(Validators.nonNull())
                 }
             }
-
-            init {
-                CodecStore.STATIC.putCodec(CodecKey("EnergyConnectionCodec"), CODEC)
-            }
         }
     }
 
     companion object {
         val CODEC: BuilderCodec<WiredEnergyComponent> = codec(WiredEnergyComponent::class, ::WiredEnergyComponent) {
-            field(WiredEnergyComponent::connectedBlocks, SetCodec(StoredCodec(CodecKey("EnergyConnectionCodec")), { ConcurrentHashMap.newKeySet() }, false))
+            field(WiredEnergyComponent::connectedBlocks, SetCodec(EnergyConnection.CODEC, { ConcurrentHashMap.newKeySet() }, false))
             field(WiredEnergyComponent::value, Codec.DOUBLE)
         }
 

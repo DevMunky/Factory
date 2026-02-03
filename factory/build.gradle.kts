@@ -19,4 +19,23 @@ tasks {
         archiveFileName.set("FactoryMod.jar")
         destinationDirectory.set(file(rootDir.resolve("./out/")))
     }
+
+    register<Copy>("moveModsToServers") {
+        outputs.upToDateWhen { false }
+        doNotTrackState("Instrumentation needs to re-run every time")
+
+        val jarDir = rootDir.resolve("./out/")
+        val server1Mods = "Server/mods/"
+        val server2Mods = "Server2/mods/"
+
+        from(jarDir) {
+            into(server1Mods)
+        }
+
+        from(jarDir) {
+            into(server2Mods)
+        }
+
+        into(rootDir.resolve(".server/"))
+    }
 }
